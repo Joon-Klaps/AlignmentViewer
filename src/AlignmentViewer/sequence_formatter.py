@@ -13,7 +13,11 @@ class SequenceFormatter:
 
         for i, base in enumerate(sequence_slice):
             if i > 0 and i % block_size == 0:
-                formatted.append(' ')
+                # Add transparent spacer instead of space
+                if html:
+                    formatted.append(f'<span style="{self.colors.html_colors["X"]}">X</span>')
+                else:
+                    formatted.append(f"{self.colors.nucleotides['X']}X{self.colors.reset}")
             base_upper = base.upper()
             if base_upper in (self.colors.html_colors if html else self.colors.nucleotides):
                 if html:
