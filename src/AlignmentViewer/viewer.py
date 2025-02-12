@@ -71,17 +71,22 @@ class AlignmentViewer:
         css = f"""
         <style>
             .alignment-container {{
-                font-family: monospace;
+                font-family: "Courier New", "Consolas", monospace;
+                text-transform: none;
                 white-space: pre;
                 overflow-x: auto;
                 max-height: {config.container_height};
                 background-color: white;
                 padding: 10px;
-                border: 1px solid #ddd;
+                font-size: 14px;
+                font-variant-ligatures: none;
+                -webkit-font-feature-settings: "liga" 0, "calt" 0;
+                font-feature-settings: "liga" 0, "calt" 0;
             }}
             .sequence-row {{
                 line-height: 1.5;
                 margin: 2px 0;
+                letter-spacing: 0;
             }}
         </style>
         """
