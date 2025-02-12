@@ -6,7 +6,6 @@ from pathlib import Path
 from IPython.display import HTML, display
 from Bio import SeqIO
 
-@dataclass
 class ColorScheme:
     """Color configuration for sequence display"""
     nucleotides: Dict[str, str]
@@ -31,7 +30,6 @@ class ColorScheme:
             }
         )
 
-@dataclass
 class DisplayConfig:
     """Configuration for alignment display.
 
@@ -54,7 +52,6 @@ class DisplayConfig:
     container_height: str = "300px"
     as_html: Optional[bool] = None
 
-@dataclass
 class Sequence:
     """Represents a single sequence in the alignment"""
     header: str
