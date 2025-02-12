@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=45", "wheel"]
+requires = ["setuptools<45", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -8,6 +8,7 @@ version = "0.1.0"
 description = "A quick and simple FASTA alignment viewer for Python notebooks"
 readme = "README.md"
 requires-python = ">=3.6"
+authors = [ {name = "Joon Klaps"},]
 license = {text = "MIT"}
 classifiers = [
     "Development Status :: 3 - Alpha",
@@ -15,11 +16,19 @@ classifiers = [
     "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.6",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "Topic :: Scientific/Engineering :: Bio-Informatics",
 ]
+keywords = ["fasta", "alignment",]
 dependencies = [
-    "ipython",
-    "biopython>=1.74",
+    "ipython<8.0",
+    "biopython>=1.74,<1.81"
 ]
 
 [project.urls]
