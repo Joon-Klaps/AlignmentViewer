@@ -175,3 +175,5 @@ cython_debug/
 .vscode/
 *.swp
 *.swo
+
+src/AlignmentViewer/__version__.py
