@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-from dataclasses import dataclass
 from typing import Dict, List, Union, TextIO, Optional
 from pathlib import Path
 from IPython.display import HTML, display
@@ -8,9 +7,10 @@ from Bio import SeqIO
 
 class ColorScheme:
     """Color configuration for sequence display"""
-    nucleotides: Dict[str, str]
-    reset: str
-    html_colors: Dict[str, str]  # New HTML colors
+    def __init__(self, nucleotides: Dict[str, str], reset: str, html_colors: Dict[str, str]):
+        self.nucleotides = nucleotides
+        self.reset = reset
+        self.html_colors = html_colors
 
     @classmethod
     def default(cls) -> 'ColorScheme':
@@ -31,31 +31,30 @@ class ColorScheme:
         )
 
 class DisplayConfig:
-    """Configuration for alignment display.
-
-    Attributes:
-        nseqs (int): Number of sequences to display at once. Defaults to 10.
-        ncols (int): Number of columns to display at once. Defaults to 100.
-        show_ruler (bool): Whether to show position ruler above sequences. Defaults to True.
-        block_size (int): Number of residues in each block before spacing. Defaults to 10.
-        start_pos (int): Starting position for display (0-based). Defaults to 0.
-        container_height (str): Height of the display container in CSS format. Defaults to "300px".
-        as_html (Optional[bool]): Whether to return HTML format. If None, format is auto-detected.
-            Defaults to None.
-    """
     """Configuration for alignment display"""
-    nseqs: int = 10
-    ncols: int = 100
-    show_ruler: bool = True
-    block_size: int = 10
-    start_pos: int = 0
-    container_height: str = "300px"
-    as_html: Optional[bool] = None
+    def __init__(
+        self,
+        nseqs: int = 10,
+        ncols: int = 100,
+        show_ruler: bool = True,
+        block_size: int = 10,
+        start_pos: int = 0,
+        container_height: str = "300px",
+        as_html: Optional[bool] = None
+    ):
+        self.nseqs = nseqs
+        self.ncols = ncols
+        self.show_ruler = show_ruler
+        self.block_size = block_size
+        self.start_pos = start_pos
+        self.container_height = container_height
+        self.as_html = as_html
 
 class Sequence:
     """Represents a single sequence in the alignment"""
-    header: str
-    sequence: str
+    def __init__(self, header: str, sequence: str):
+        self.header = header
+        self.sequence = sequence
 
     @classmethod
     def from_seqrecord(cls, record) -> 'Sequence':
