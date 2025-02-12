@@ -63,11 +63,46 @@ class AlignmentViewer:
         except NameError:
             return False
 
+    def _calculate_display_width(self, sequence_length: int, block_size: int) -> int:
+        """Calculate the actual display width considering spaces between blocks"""
+        if sequence_length == 0:
+            return 0
+        # Add 1 space for every complete block (except the last one)
+        num_blocks = (sequence_length - 1) // block_size
+        return sequence_length + num_blocks
+
+    def _create_ruler(self, padding: str, width: int, start_pos: int = 0, step: int = 10) -> str:
+        """Create a ruler string with column numbers and spaces"""
+        if width == 0:
+            return ""
+
+        ticks = []
+        numbers = []
+        pos = start_pos
+        display_width = self._calculate_display_width(width, step)
+
+        # Create the number line
+        current_pos = 0
+        while current_pos < display_width:
+            if current_pos % (step + 1) == 0:  # +1 accounts for the space after each block
+                num = str(pos + (current_pos * step // (step + 1)))
+                numbers.append(num.ljust(step + 1))  # +1 for the space after block
+            current_pos += 1
+
+        # Create tick marks
+        for i in range(display_width):
+            if i % (step + 1) == 0:  # +1 accounts for the space after each block
+                ticks.append('|')
+            else:
+                ticks.append('-')
+
+        return ''.join(numbers).rstrip() + '\n' + padding + ''.join(ticks)
+
     def _display_notebook(self, sequences: List[Sequence], config: DisplayConfig, max_header_len: int) -> None:
         """Display alignment in a notebook with scrollable container"""
         html_parts = []
 
-        # CSS for the container
+        # Add CSS with specific spacing adjustments
         css = f"""
         <style>
             .alignment-container {{
@@ -82,6 +117,10 @@ class AlignmentViewer:
             .sequence-row {{
                 line-height: 1.5;
                 margin: 2px 0;
+            }}
+            .sequence-row span {{
+                display: inline-block;
+                width: 1ch;  /* Force consistent width */
             }}
         </style>
         """
@@ -129,24 +168,3 @@ class AlignmentViewer:
                 config.start_pos
             )
             print(f"{sequence.header:<{max_header_len}} {colored_seq}")
-
-    def _create_ruler(self, padding: str, width: int, start_pos: int = 0, step: int = 10) -> str:
-        """Create a ruler string with column numbers and spaces"""
-        ticks = ''
-        numbers = []
-        pos = start_pos
-
-        # Create number line and tick marks simultaneously
-        for i in range(width):
-            if i % step == 0:
-                num = str(pos + i)
-                space = ' ' * (step - len(num))
-                space += ' ' if i > 0 else ''
-                numbers.append(num + space)
-                ticks += '|'
-                if i > 0:
-                    ticks += ' '
-            else:
-                ticks += '-'
-
-        return ''.join(numbers) + '\n' + padding + ticks
