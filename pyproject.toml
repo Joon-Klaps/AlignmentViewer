@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools>=45", "wheel", "setuptools_scm>=6.2"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "alv"
+description = "A quick and simple FASTA alignment viewer for Python notebooks"
+readme = "README.md"
+requires-python = ">=3.7"
+license = {text = "MIT"}
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.7",
+    "Topic :: Scientific/Engineering :: Bio-Informatics",
+]
+dependencies = [
+    "ipython",
+]
+dynamic = ["version"]
+
+[project.urls]
+Homepage = "https://github.com/ECV-Lab-KULeuven/alv"
+Repository = "https://github.com/ECV-Lab-KULeuven/alv.git"
+
+[tool.setuptools_scm]
+write_to = "src/alv/__version__.py"
