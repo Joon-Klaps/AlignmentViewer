@@ -1,4 +1,5 @@
 from typing import List, Union, TextIO, Optional
+import sys
 from pathlib import Path
 from IPython.display import HTML, display
 
@@ -115,7 +116,12 @@ class AlignmentViewer:
         display(HTML(''.join(html_parts)))
 
     def _display_terminal(self, sequences: List[Sequence], config: DisplayConfig, max_header_len: int) -> None:
-        """Display alignment in terminal"""
+        """Display alignment in terminal with width detection"""
+        # Adjust ncols if it exceeds terminal width
+        available_width = self.terminal_width - max_header_len - 2  # -2 for padding
+        if config.ncols == 0 or config.ncols > available_width:
+            config.ncols = available_width
+
         padding = ' ' * (max_header_len + 1)
 
         if config.show_ruler:
@@ -131,22 +137,33 @@ class AlignmentViewer:
             print(f"{sequence.header:<{max_header_len}} {colored_seq}")
 
     def _create_ruler(self, padding: str, width: int, start_pos: int = 0, step: int = 10) -> str:
-        """Create a ruler string with column numbers and spaces"""
-        ticks = []
-        numbers = []
-        pos = start_pos
+        """Create a ruler string with column numbers and spaces using improved tick marks"""
+        def calc_tick_indices(start, end, distance, min_distance):
+            """Calculate positions for tick marks"""
+            first_even_pos = (start // distance + 1) * distance
+            if first_even_pos - start < min_distance:
+                first_even_pos += distance
+            return range(first_even_pos, end, distance)
 
-        for i in range(width):
-            if i % step == 0:
-                num = str(pos + i)
-                numbers.append(num.ljust(step))
-                ticks.append('|')
-            else:
-                ticks.append('-')
+        def make_one_tick(position, space, tickmark):
+            """Create a single tick mark with position number"""
+            return '{0:>{width}}{tickmark}'.format(position, width=space-1, tickmark=tickmark)
 
-            # Add transparent spacer after each block
-            if (i + 1) % step == 0 and i < width - 1:
-                numbers.append('X')  # Will be invisible
-                ticks.append('X')    # Will be invisible
+        # Use UTF-8 arrow if supported, else fallback to |
+        tickmark = '↑' if sys.stdout.encoding == 'UTF-8' else '|'
 
-        return ''.join(numbers) + '\n' + padding + ''.join(ticks)
+        # Initial space for left margin
+        index_bar = ' ' * (len(padding) - step + 1)
+
+        # Add first column index
+        index_bar += make_one_tick(start_pos, min(len(padding)+1, step), tickmark)
+
+        # Add remaining ticks
+        last_pos = start_pos
+        for pos in calc_tick_indices(start_pos, start_pos + width, step, step):
+            spacer = pos - last_pos - 1
+            index_block = '{0:>{width}}{tickmark}'.format(pos, width=spacer, tickmark=tickmark)
+            index_bar += index_block
+            last_pos = pos
+
+        return index_bar
