@@ -18,6 +18,7 @@ classifiers = [
 ]
 dependencies = [
     "ipython",
+    "biopython>=1.74",
 ]
 dynamic = ["version"]
 
