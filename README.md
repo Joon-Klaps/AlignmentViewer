@@ -15,7 +15,7 @@ A quick and simple FASTA alignment viewer for Python notebooks with colored sequ
 ## Installation
 
 ```bash
-pip install git+https://github.com/ECV-Lab-KULeuven/AlignmentViewer.git@dev
+pip install git+https://github.com/ECV-Lab-KULeuven/AlignmentViewer.git
 ```
 
 ## Usage
