@@ -71,22 +71,17 @@ class AlignmentViewer:
         css = f"""
         <style>
             .alignment-container {{
-                font-family: "Courier New", "Consolas", monospace;
-                text-transform: none;
+                font-family: monospace;
                 white-space: pre;
                 overflow-x: auto;
                 max-height: {config.container_height};
                 background-color: white;
                 padding: 10px;
-                font-size: 14px;
-                font-variant-ligatures: none;
-                -webkit-font-feature-settings: "liga" 0, "calt" 0;
-                font-feature-settings: "liga" 0, "calt" 0;
+                border: 1px solid #ddd;
             }}
             .sequence-row {{
                 line-height: 1.5;
                 margin: 2px 0;
-                letter-spacing: 0;
             }}
         </style>
         """
@@ -137,21 +132,21 @@ class AlignmentViewer:
 
     def _create_ruler(self, padding: str, width: int, start_pos: int = 0, step: int = 10) -> str:
         """Create a ruler string with column numbers and spaces"""
-        ticks = ''
+        ticks = []
         numbers = []
         pos = start_pos
 
-        # Create number line and tick marks simultaneously
         for i in range(width):
             if i % step == 0:
                 num = str(pos + i)
-                space = ' ' * (step - len(num))
-                space += ' ' if i > 0 else ''
-                numbers.append(num + space)
-                ticks += '|'
-                if i > 0:
-                    ticks += ' '
+                numbers.append(num.ljust(step))
+                ticks.append('|')
             else:
-                ticks += '-'
+                ticks.append('-')
 
-        return ''.join(numbers) + '\n' + padding + ticks
+            # Add transparent spacer after each block
+            if (i + 1) % step == 0 and i < width - 1:
+                numbers.append('X')  # Will be invisible
+                ticks.append('X')    # Will be invisible
+
+        return ''.join(numbers) + '\n' + padding + ''.join(ticks)
