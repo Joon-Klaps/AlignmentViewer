@@ -32,14 +32,26 @@ class ColorScheme:
 
 @dataclass
 class DisplayConfig:
+    """Configuration for alignment display.
+
+    Attributes:
+        nseqs (int): Number of sequences to display at once. Defaults to 10.
+        ncols (int): Number of columns to display at once. Defaults to 100.
+        show_ruler (bool): Whether to show position ruler above sequences. Defaults to True.
+        block_size (int): Number of residues in each block before spacing. Defaults to 10.
+        start_pos (int): Starting position for display (0-based). Defaults to 0.
+        container_height (str): Height of the display container in CSS format. Defaults to "300px".
+        as_html (Optional[bool]): Whether to return HTML format. If None, format is auto-detected.
+            Defaults to None.
+    """
     """Configuration for alignment display"""
     nseqs: int = 10
     ncols: int = 100
     show_ruler: bool = True
     block_size: int = 10
-    start_pos: int = 0  # New parameter for starting position
-    container_height: str = "300px"  # New parameter for scroll container height
-    is_notebook: Optional[bool] = None  # New parameter to override notebook detection
+    start_pos: int = 0
+    container_height: str = "300px"
+    as_html: Optional[bool] = None
 
 @dataclass
 class Sequence:
@@ -145,7 +157,7 @@ class AlignmentViewer:
             if hasattr(base_config, key):
                 setattr(base_config, key, value)
             else:
-                raise ValueError(f"Unknown configuration parameter: {key}")
+                raise ValueError(f"Unknown configuration parameter: {key}\nOptions are: {','.join(vars(base_config))}")
 
         # Parse sequences
         sequences = (alignment if isinstance(alignment, list)
@@ -154,11 +166,11 @@ class AlignmentViewer:
         # Calculate layout
         max_header_len = max(len(seq.header) for seq in sequences)
 
-        # Use config's is_notebook if set, otherwise detect
-        is_notebook = (base_config.is_notebook if base_config.is_notebook is not None
+        # Use config's as_html if set, otherwise detect
+        as_html = (base_config.as_html if base_config.as_html is not None
                       else viewer._check_notebook())
 
-        if is_notebook:
+        if as_html:
             viewer._display_notebook(sequences, base_config, max_header_len)
         else:
             viewer._display_terminal(sequences, base_config, max_header_len)
