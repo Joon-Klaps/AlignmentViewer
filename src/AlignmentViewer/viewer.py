@@ -39,6 +39,7 @@ class DisplayConfig:
     block_size: int = 10
     start_pos: int = 0  # New parameter for starting position
     container_height: str = "300px"  # New parameter for scroll container height
+    is_notebook: Optional[bool] = None  # New parameter to override notebook detection
 
 @dataclass
 class Sequence:
@@ -128,24 +129,12 @@ class AlignmentViewer:
     def __init__(self, color_scheme: Optional[ColorScheme] = None):
         self.color_scheme = color_scheme or ColorScheme.default()
         self.formatter = SequenceFormatter(self.color_scheme)
-        self._is_notebook = self._check_notebook()
-
-    def _check_notebook(self) -> bool:
-        """Check if we're running in a Jupyter notebook"""
-        try:
-            shell = get_ipython().__class__.__name__
-            if shell == 'ZMQInteractiveShell':
-                return True
-            return False
-        except NameError:
-            return False
 
     @staticmethod
     def display_alignment(alignment: Union[str, Path, TextIO, List[Sequence]],
                          config: Optional[DisplayConfig] = None,
                          **kwargs) -> None:
         """Display a colored alignment with optional configuration"""
-        # Create viewer instance for this call
         viewer = AlignmentViewer()
 
         # Create base config
@@ -164,12 +153,25 @@ class AlignmentViewer:
 
         # Calculate layout
         max_header_len = max(len(seq.header) for seq in sequences)
-        padding = ' ' * (max_header_len + 1)
 
-        if viewer._is_notebook:
+        # Use config's is_notebook if set, otherwise detect
+        is_notebook = (base_config.is_notebook if base_config.is_notebook is not None
+                      else viewer._check_notebook())
+
+        if is_notebook:
             viewer._display_notebook(sequences, base_config, max_header_len)
         else:
             viewer._display_terminal(sequences, base_config, max_header_len)
+
+    def _check_notebook(self) -> bool:
+        """Check if we're running in a Jupyter notebook"""
+        try:
+            shell = get_ipython().__class__.__name__
+            if shell == 'ZMQInteractiveShell':
+                return True
+            return False
+        except NameError:
+            return False
 
     def _display_notebook(self, sequences: List[Sequence], config: DisplayConfig, max_header_len: int) -> None:
         """Display alignment in a notebook with scrollable container"""
