@@ -34,21 +34,34 @@ class DisplayConfig:
     """Configuration for alignment display"""
     def __init__(
         self,
-        nseqs: int = 10,
-        ncols: int = 100,
+        nseqs: int = 0,
+        ncols: int = 0,
         show_ruler: bool = True,
         block_size: int = 10,
         start_pos: int = 0,
         container_height: str = "300px",
         as_html: Optional[bool] = None
     ):
-        self.nseqs = nseqs
-        self.ncols = ncols
+        self.nseqs = int(nseqs)
+        self.ncols = int(ncols)
         self.show_ruler = show_ruler
-        self.block_size = block_size
-        self.start_pos = start_pos
+        self.block_size = int(block_size)
+        self.start_pos = int(start_pos)
         self.container_height = container_height
         self.as_html = as_html
+
+
+    def validate(self):
+        """Validate the configuration values."""
+        if self.nseqs < 0:
+            raise ValueError("Number of sequences must be greater than or equal to 0.")
+        if self.ncols < 0:
+            raise ValueError("Number of columns must be greater than or equal to 0.")
+        if self.block_size < 10:
+            raise ValueError("Block size must be greater than 10.")
+        if self.start_pos < 0:
+            raise ValueError("Start position must be greater than or equal to 0.")
+
 
 class Sequence:
     """Represents a single sequence in the alignment"""
@@ -80,7 +93,11 @@ class SequenceReader:
                 # For file handles, default to FASTA
                 records = list(SeqIO.parse(source, "fasta"))
 
-            return [Sequence.from_seqrecord(record) for record in records[:max_seqs]]
+            # Limit the number of sequences if max_seqs is set
+            max_seqs = 0 if max_seqs > len(records) else max_seqs
+
+            # Return all sequences if max_seqs is 0, otherwise limit to max_seqs
+            return [Sequence.from_seqrecord(record) for record in (records if max_seqs == 0 else records[:max_seqs])]
         except Exception as e:
             raise ValueError(f"Error parsing sequence file: {e}")
 
@@ -108,41 +125,32 @@ class SequenceFormatter:
     def __init__(self, color_scheme: ColorScheme):
         self.colors = color_scheme
 
-    def format_sequence(self, sequence: str, ncols: int, block_size: int, start_pos: int = 0) -> str:
-        """Format and colorize a sequence"""
+    def _format_sequence_base(self, sequence: str, ncols: int, block_size: int, start_pos: int = 0, html: bool = False) -> str:
+        """Format and colorize a sequence, with option for HTML or terminal output"""
         formatted = []
-        sequence_slice = sequence[start_pos:start_pos + ncols]
+        ncols = 0 if start_pos >= len(sequence) else ncols
+        sequence_slice = sequence[start_pos:] if ncols == 0 else sequence[start_pos:start_pos + ncols]
 
         for i, base in enumerate(sequence_slice):
             if i > 0 and i % block_size == 0:
                 formatted.append(' ')
             base_upper = base.upper()
-            if base_upper in self.colors.nucleotides:
-                formatted.append(
-                    f"{self.colors.nucleotides[base_upper]}"
-                    f"{base_upper}{self.colors.reset}"
-                )
+            if base_upper in (self.colors.html_colors if html else self.colors.nucleotides):
+                if html:
+                    formatted.append(f'<span style="{self.colors.html_colors[base_upper]}">{base_upper}</span>')
+                else:
+                    formatted.append(f"{self.colors.nucleotides[base_upper]}{base_upper}{self.colors.reset}")
             else:
                 formatted.append(base_upper)
         return ''.join(formatted)
+
+    def format_sequence(self, sequence: str, ncols: int, block_size: int, start_pos: int = 0) -> str:
+        """Format and colorize a sequence for terminal output"""
+        return self._format_sequence_base(sequence, ncols, block_size, start_pos, html=False)
 
     def format_sequence_html(self, sequence: str, ncols: int, block_size: int, start_pos: int = 0) -> str:
         """Format sequence with HTML styling"""
-        formatted = []
-        sequence_slice = sequence[start_pos:start_pos + ncols]
-
-        for i, base in enumerate(sequence_slice):
-            if i > 0 and i % block_size == 0:
-                formatted.append(' ')
-            base_upper = base.upper()
-            if base_upper in self.colors.html_colors:
-                formatted.append(
-                    f'<span style="{self.colors.html_colors[base_upper]}">'
-                    f'{base_upper}</span>'
-                )
-            else:
-                formatted.append(base_upper)
-        return ''.join(formatted)
+        return self._format_sequence_base(sequence, ncols, block_size, start_pos, html=True)
 
 class AlignmentViewer:
     """Displays colored sequence alignments"""
@@ -166,11 +174,18 @@ class AlignmentViewer:
             if hasattr(base_config, key):
                 setattr(base_config, key, value)
             else:
-                raise ValueError(f"Unknown configuration parameter: {key}")
+                raise ValueError(f"Unknown configuration parameter: {key} \nPossible values are: {', '.join(base_config.__dict__.keys())}")
+
+        # Validate config
+        base_config.validate()
 
         # Parse sequences
         sequences = (alignment if isinstance(alignment, list)
                     else SequenceReader.parse(alignment, base_config.nseqs))
+
+        # set limit for ncols:
+        if base_config.ncols > len(sequences[0].sequence):
+            base_config.ncols = len(sequences[0].sequence)
 
         # Calculate layout
         max_header_len = max(len(seq.header) for seq in sequences)
