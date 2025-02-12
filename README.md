@@ -1,5 +1,7 @@
 # Alignment Viewer
 
+[![Tests](https://github.com/ECV-Lab-KULeuven/AlignmentViewer/actions/workflows/test.yml/badge.svg)](https://github.com/ECV-Lab-KULeuven/AlignmentViewer/actions/workflows/test.yml)
+
 A quick and simple FASTA alignment viewer for Python notebooks with colored sequence visualization.
 
 ## Features
