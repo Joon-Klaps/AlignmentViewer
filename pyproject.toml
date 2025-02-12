@@ -1,9 +1,10 @@
 [build-system]
-requires = ["setuptools>=45", "wheel", "setuptools_scm>=6.2"]
+requires = ["setuptools>=45", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "AlignmentViewer"
+version = "0.1.0"
 description = "A quick and simple FASTA alignment viewer for Python notebooks"
 readme = "README.md"
 requires-python = ">=3.6"
@@ -20,11 +21,7 @@ dependencies = [
     "ipython",
     "biopython>=1.74",
 ]
-dynamic = ["version"]
 
 [project.urls]
 Homepage = "https://github.com/ECV-Lab-KULeuven/AlignmentViewer"
 Repository = "https://github.com/ECV-Lab-KULeuven/AlignmentViewer.git"
-
-[tool.setuptools_scm]
-write_to = "src/AlignmentViewer/__version__.py"
