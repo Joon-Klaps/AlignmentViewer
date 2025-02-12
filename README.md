@@ -1,4 +1,4 @@
-# alv (Alignment Viewer)
+# Alignment Viewer
 
 A quick and simple FASTA alignment viewer for Python notebooks with colored sequence visualization.
 
@@ -13,13 +13,13 @@ A quick and simple FASTA alignment viewer for Python notebooks with colored sequ
 ## Installation
 
 ```bash
-pip install alv
+pip install git+https://github.com/ECV-Lab-KULeuven/AlignmentViewer.git@dev
 ```
 
 ## Usage
 
 ```python
-from alv import AlignmentViewer
+from AlignmentViewer import AlignmentViewer
 
 # Display alignment from file
 AlignmentViewer.display_alignment("path/to/alignment.fasta", nseqs=5, ncols=50)
