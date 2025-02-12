@@ -38,8 +38,8 @@ class AlignmentViewer:
                     else SequenceReader.parse(alignment, base_config.nseqs))
 
         # set limit for ncols:
-        if base_config.ncols > len(sequences[0].sequence):
-            base_config.ncols = 0 # set to all columns
+        if base_config.ncols > len(sequences[0].sequence) or base_config.ncols == 0:
+            base_config.ncols = len(sequences[0].sequence)
 
         # Calculate layout
         max_header_len = max(len(seq.header) for seq in sequences)
