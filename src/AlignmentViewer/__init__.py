@@ -1,4 +1,7 @@
-from .AlignmentViewer import AlignmentViewer, ColorScheme, DisplayConfig, SequenceReader
+from .color_scheme import ColorScheme
+from .config import DisplayConfig
+from .sequence import Sequence
+from .viewer import AlignmentViewer
 
-__all__ = ['AlignmentViewer', 'ColorScheme', 'DisplayConfig', 'SequenceReader']
+__all__ = ['ColorScheme', 'DisplayConfig', 'Sequence', 'AlignmentViewer']
 
