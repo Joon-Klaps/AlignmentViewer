@@ -15,7 +15,7 @@ class AlignmentViewer:
         self.formatter = SequenceFormatter(self.color_scheme)
 
     @staticmethod
-    def _prepare_alignment(alignment: Union[str, Path, TextIO, List[Sequence]],
+    def _prepare_alignment(alignment: Union[str, Path, TextIO, List],
                           config: Optional[DisplayConfig] = None,
                           **kwargs) -> tuple[List[Sequence], DisplayConfig, int]:
         """Shared preparation logic for alignment processing"""
@@ -33,8 +33,7 @@ class AlignmentViewer:
         base_config.validate()
 
         # Parse sequences
-        sequences = (alignment if isinstance(alignment, list)
-                    else SequenceReader.parse(alignment, base_config.nseqs))
+        sequences = SequenceReader.parse(alignment, base_config.nseqs)
 
         # set limit for ncols:
         if base_config.ncols > len(sequences[0].sequence) or base_config.ncols == 0:
@@ -46,7 +45,7 @@ class AlignmentViewer:
         return sequences, base_config, max_header_len
 
     @staticmethod
-    def display_alignment(alignment: Union[str, Path, TextIO, List[Sequence]],
+    def display_alignment(alignment: Union[str, Path, TextIO, List],
                          config: Optional[DisplayConfig] = None,
                          **kwargs) -> None:
         """Display a colored alignment with optional configuration"""
@@ -71,7 +70,7 @@ class AlignmentViewer:
             viewer._display_terminal(sequences, base_config, max_header_len)
 
     @staticmethod
-    def get_alignment_html(alignment: Union[str, Path, TextIO, List[Sequence]],
+    def get_alignment_html(alignment: Union[str, Path, TextIO, List],
                           config: Optional[DisplayConfig] = None,
                           **kwargs) -> str:
         """Generate raw HTML for a colored alignment that can be embedded in other platforms"""
@@ -83,7 +82,7 @@ class AlignmentViewer:
         return viewer._generate_html(sequences, base_config, max_header_len)
 
     @staticmethod
-    def get_alignment_plotly(alignment: Union[str, Path, TextIO, List[Sequence]],
+    def get_alignment_plotly(alignment: Union[str, Path, TextIO, List],
                             config: Optional[DisplayConfig] = None,
                             **kwargs):
         """Generate a Plotly figure object for a colored alignment"""
@@ -95,7 +94,7 @@ class AlignmentViewer:
         return viewer._create_plotly_figure(sequences, base_config)
 
     @staticmethod
-    def get_alignment_plotly_html(alignment: Union[str, Path, TextIO, List[Sequence]],
+    def get_alignment_plotly_html(alignment: Union[str, Path, TextIO, List],
                                  config: Optional[DisplayConfig] = None,
                                  **kwargs) -> str:
         """Generate Plotly HTML string for a colored alignment"""

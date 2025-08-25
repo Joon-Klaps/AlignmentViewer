@@ -30,7 +30,9 @@ AlignmentViewer.display_alignment("data/alignment.fasta", nseqs=5, ncols=50, as_
 ### Jupyter/HTML Output
 ```python
 from AlignmentViewer import AlignmentViewer
-AlignmentViewer.display_alignment("data/alignment.fasta", nseqs=5, ncols=50, as_html=True)
+from Bio import SeqIO
+sequences = list(SeqIO.parse("../data/alignment.fasta", "fasta"))
+AlignmentViewer.display_alignment(sequences, nseqs=5, ncols=50, as_html=True)
 ```
 
 ### Plotly Heatmap Output (Integrated)
