@@ -18,14 +18,61 @@ A quick and simple FASTA alignment viewer for Python notebooks with colored sequ
 pip install git+https://github.com/ECV-Lab-KULeuven/AlignmentViewer.git
 ```
 
+
 ## Usage
 
+### Terminal Output
+```python
+from AlignmentViewer import AlignmentViewer
+AlignmentViewer.display_alignment("data/alignment.fasta", nseqs=5, ncols=50, as_html=False)
+```
+
+### Jupyter/HTML Output
+```python
+from AlignmentViewer import AlignmentViewer
+AlignmentViewer.display_alignment("data/alignment.fasta", nseqs=5, ncols=50, as_html=True)
+```
+
+### Plotly Heatmap Output (Integrated)
+```python
+from AlignmentViewer import AlignmentViewer
+from AlignmentViewer.config import DisplayConfig
+
+# Simple plotly heatmap
+AlignmentViewer.display_alignment("data/alignment.fasta", nseqs=5, ncols=50, as_plotly=True)
+
+# With consensus bar
+config = DisplayConfig(nseqs=5, ncols=50, as_plotly=True, show_consensus=True)
+AlignmentViewer.display_alignment("data/alignment.fasta", config=config)
+```
+
+### Get Plotly Figure Object
 ```python
 from AlignmentViewer import AlignmentViewer
 
-# Display alignment from file
-AlignmentViewer.display_alignment("data/alignment.fasta", nseqs=5, ncols=50)
+# Get figure object for further customization
+fig = AlignmentViewer.get_alignment_plotly("data/alignment.fasta", nseqs=5, ncols=50)
+fig.show()
+
+# Get as HTML string
+html_string = AlignmentViewer.get_alignment_plotly_html("data/alignment.fasta", nseqs=5, ncols=50)
 ```
+
+### Using the Config Object
+You can customize display options using the `DisplayConfig` object:
+```python
+from AlignmentViewer.config import DisplayConfig
+config = DisplayConfig(
+    nseqs=5,
+    ncols=50,
+    show_ruler=True,
+    block_size=10,
+    as_plotly=True,  # Enable Plotly output
+    show_consensus=True  # Add consensus bar above heatmap
+)
+AlignmentViewer.display_alignment("data/alignment.fasta", config=config)
+```
+
 ![Example image](docs/example.png)
 
 ## Configuration
