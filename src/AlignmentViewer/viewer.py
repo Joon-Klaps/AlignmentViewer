@@ -376,27 +376,15 @@ class AlignmentViewer:
             }}"""
 
         # Add consensus CSS only if consensus is enabled
+        consensus_css = ""
         if config.show_consensus:
-            css += f"""
-            .consensus-container {{
-                height: {config.consensus_height};
-                margin: 5px 0;
-                border-bottom: 1px solid #ccc;
-                display: flex;
-                align-items: end;
-                padding-bottom: 2px;
-            }}
-            .consensus-bar {{
-                width: 1ch;
-                background-color: #4CAF50;
-                margin-right: 0;
-                border-right: 1px solid #fff;
-            }}
-            .consensus-bar:hover {{
-                background-color: #45a049;
-            }}"""
+            padding = ' ' * (max_header_len + 1)
+            consensus_css, _ = self._generate_consensus_html(
+                sequences, padding, config.ncols, config.start_pos,
+                config.block_size, config.consensus_height, config.consensus_ignore_gaps
+            )
 
-        css += """
+        css += consensus_css + """
         </style>
         """
 
@@ -408,11 +396,14 @@ class AlignmentViewer:
 
         if config.show_ruler:
             ruler = self._create_ruler(padding, config.ncols, config.start_pos, config.block_size)
-            html_parts.append(f"<div class='sequence-row'>{padding}{ruler}</div>")
+            html_parts.append(f"<div class='sequence-row'>{ruler}</div>")
 
         # Add consensus bar chart if requested
         if config.show_consensus:
-            consensus_html = self._generate_consensus_html(sequences, config, max_header_len)
+            _, consensus_html = self._generate_consensus_html(
+                sequences, padding, config.ncols, config.start_pos,
+                config.block_size, config.consensus_height, config.consensus_ignore_gaps
+            )
             html_parts.append(consensus_html)
 
         # Add sequences
@@ -433,36 +424,115 @@ class AlignmentViewer:
 
         return ''.join(html_parts)
 
-    def _generate_consensus_html(self, sequences: List[Sequence], config: DisplayConfig, max_header_len: int) -> str:
-        """Generate HTML for consensus bar chart"""
+    def _generate_consensus_html(self, sequences: List[Sequence], padding: str,
+                            ncols: int, start_pos: int, block_size: int,
+                            consensus_height: str, consensus_ignore_gaps: bool) -> tuple[str, str]:
+        """
+        Generate HTML and CSS for consensus bar chart
+
+        Returns:
+            tuple: (css_string, html_string)
+        """
         calculator = ConsensusCalculator(sequences)
 
         # Get consensus data for the visible range
         consensus_data = calculator.generate_consensus_bar_data(
-            start_pos=config.start_pos,
-            ncols=config.ncols,
-            block_size=config.block_size,
-            ignore_gaps=config.consensus_ignore_gaps
+            start_pos=start_pos,
+            ncols=ncols,
+            block_size=block_size,
+            ignore_gaps=consensus_ignore_gaps
         )
 
-        # Generate bar chart HTML
-        padding = ' ' * (max_header_len + 1)
-        consensus_html = f'<div class="sequence-row">{padding}<div class="consensus-container">'
+        # Generate CSS for consensus with custom tooltip
+        css = f"""
+            .consensus-container {{
+                height: {consensus_height};
+                margin: 5px 0;
+                border-bottom: 1px solid #ccc;
+                display: flex;
+                align-items: end;
+                padding-bottom: 2px;
+            }}
+            .consensus-bar {{
+                width: 1ch;
+                background-color: grey;
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+                position: relative;
+                cursor: pointer;
+            }}
+            .consensus-bar:hover {{
+                background-color: darkgrey;
+            }}
+            .consensus-bar::after {{
+                content: attr(data-tooltip);
+                position: absolute;
+                bottom: 100%;
+                left: 50%;
+                transform: translateX(-50%);
+                background-color: #333;
+                color: white;
+                padding: 4px 8px;
+                border-radius: 4px;
+                font-size: 11px;
+                white-space: nowrap;
+                visibility: hidden;
+                opacity: 0;
+                transition: opacity 0.3s ease;
+                z-index: 1000;
+                margin-bottom: 5px;
+            }}
+            .consensus-bar::before {{
+                content: '';
+                position: absolute;
+                bottom: 100%;
+                left: 50%;
+                transform: translateX(-50%);
+                border: 4px solid transparent;
+                border-top-color: #333;
+                visibility: hidden;
+                opacity: 0;
+                transition: opacity 0.3s ease;
+                z-index: 1000;
+                margin-bottom: 1px;
+            }}
+            .consensus-bar:hover::after,
+            .consensus-bar:hover::before {{
+                visibility: visible;
+                opacity: 1;
+            }}
+            .consensus-spacer {{
+                width: 1ch;
+                height: 100%;
+                background-color: transparent;
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }}"""
 
-        # Create bars for each position
-        for pos, agreement in consensus_data:
+        # Generate bar chart HTML with proper alignment using non-breaking spaces
+        padding_html = '&nbsp;' * len(padding)
+        consensus_html = f'<div class="sequence-row"><div class="consensus-container">{padding_html}'
+
+        # Create bars for each position with proper spacing to match sequence formatting
+        for i, (pos, agreement) in enumerate(consensus_data):
+            # Add space before blocks (except the first position in each block)
+            if i > 0 and i % block_size == 0:
+                consensus_html += '<div class="consensus-spacer"></div>'
+
             # Calculate bar height as percentage of container height
             height_percent = agreement  # agreement is already 0-100
             bar_html = (
                 f'<div class="consensus-bar" '
                 f'style="height: {height_percent}%;" '
-                f'title="Position {pos + 1}: {agreement:.1f}% agreement">'
+                f'data-tooltip="Pos {pos}: {agreement:.1f}%">'
                 f'</div>'
             )
             consensus_html += bar_html
 
         consensus_html += '</div></div>'
-        return consensus_html
+        return css, consensus_html
 
     def _display_notebook(self, sequences: List[Sequence], config: DisplayConfig, max_header_len: int) -> None:
         """Display alignment in a notebook with scrollable container"""
@@ -474,7 +544,8 @@ class AlignmentViewer:
         padding = ' ' * (max_header_len + 1)
 
         if config.show_ruler:
-            print(f"{padding}{self._create_ruler(padding, config.ncols, config.start_pos, config.block_size)}")
+            ruler = self._create_ruler(padding, config.ncols, config.start_pos, config.block_size)
+            print(ruler)
 
         for sequence in sequences:
             colored_seq = self.formatter.format_sequence(
@@ -485,17 +556,17 @@ class AlignmentViewer:
             )
             print(f"{sequence.header:<{max_header_len}} {colored_seq}")
 
-    def _create_ruler(self, padding: str, width: int, start_pos: int = 0, step: int = 10) -> str:
+    def _create_ruler(self, padding: str, ncols: int, start_pos: int, block_size: int) -> str:
         """Create a ruler string with column numbers and spaces"""
         ticks = ''
         numbers = []
         pos = start_pos
 
         # Create number line and tick marks simultaneously
-        for i in range(width):
-            if i % step == 0:
+        for i in range(ncols):
+            if i % block_size == 0:
                 num = str(pos + i)
-                space = ' ' * (step - len(num))
+                space = ' ' * (block_size - len(num))
                 space += ' ' if i > 0 else ''
                 numbers.append(num + space)
                 ticks += '|'
@@ -504,4 +575,5 @@ class AlignmentViewer:
             else:
                 ticks += '-'
 
-        return ''.join(numbers) + '\n' + padding + ticks
+        padding_html = '&nbsp;' * len(padding)
+        return padding_html + ''.join(numbers) + '\n' + padding_html + ticks

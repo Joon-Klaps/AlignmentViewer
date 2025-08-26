@@ -41,8 +41,8 @@ class DisplayConfig:
             raise ValueError("Number of sequences must be greater than or equal to 0.")
         if self.ncols < 0:
             raise ValueError("Number of columns must be greater than or equal to 0.")
-        if self.block_size < 10:
-            raise ValueError("Block size must be greater than 10.")
+        if self.block_size < 3:
+            raise ValueError("Block size must be greater than or equal to 3.")
         if self.start_pos < 0:
             raise ValueError("Start position must be greater than or equal to 0.")
         if self.plotly_chunk_size < 100:
