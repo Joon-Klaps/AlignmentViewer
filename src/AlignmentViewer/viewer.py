@@ -407,12 +407,18 @@ class AlignmentViewer:
             html_parts.append(consensus_html)
 
         # Add sequences
+        consensus_seq = None
+        if config.color_snps_only:
+            calculator = ConsensusCalculator(sequences)
+            consensus_seq = calculator.get_consensus_sequence(config.consensus_ignore_gaps)
         for sequence in sequences:
             colored_seq = self.formatter.format_sequence_html(
                 sequence.sequence,
                 config.ncols,
                 config.block_size,
-                config.start_pos
+                config.start_pos,
+                consensus=consensus_seq,
+                color_snps_only=config.color_snps_only
             )
             html_parts.append(
                 f"<div class='sequence-row'>"
@@ -454,13 +460,15 @@ class AlignmentViewer:
                 padding-bottom: 2px;
             }}
             .consensus-bar {{
-                width: 1ch;
                 background-color: grey;
                 margin: 0;
                 padding: 0;
                 box-sizing: border-box;
                 position: relative;
                 cursor: pointer;
+                width: 1ch;
+                font-family monospace;
+                color: transparent;
             }}
             .consensus-bar:hover {{
                 background-color: darkgrey;
@@ -504,6 +512,7 @@ class AlignmentViewer:
             }}
             .consensus-spacer {{
                 width: 1ch;
+                font-family: monospace;
                 height: 100%;
                 background-color: transparent;
                 margin: 0;
@@ -519,7 +528,7 @@ class AlignmentViewer:
         for i, (pos, agreement) in enumerate(consensus_data):
             # Add space before blocks (except the first position in each block)
             if i > 0 and i % block_size == 0:
-                consensus_html += '<div class="consensus-spacer"></div>'
+                consensus_html += '<div class="consensus-spacer">&nbsp;</div>'
 
             # Calculate bar height as percentage of container height
             height_percent = agreement  # agreement is already 0-100
@@ -527,6 +536,7 @@ class AlignmentViewer:
                 f'<div class="consensus-bar" '
                 f'style="height: {height_percent}%;" '
                 f'data-tooltip="Pos {pos}: {agreement:.1f}%">'
+                f'&nbsp;'
                 f'</div>'
             )
             consensus_html += bar_html
@@ -544,19 +554,25 @@ class AlignmentViewer:
         padding = ' ' * (max_header_len + 1)
 
         if config.show_ruler:
-            ruler = self._create_ruler(padding, config.ncols, config.start_pos, config.block_size)
+            ruler = self._create_ruler(padding, config.ncols, config.start_pos, config.block_size, is_html=False)
             print(ruler)
 
+        consensus_seq = None
+        if config.color_snps_only:
+            calculator = ConsensusCalculator(sequences)
+            consensus_seq = calculator.get_consensus_sequence(config.consensus_ignore_gaps)
         for sequence in sequences:
             colored_seq = self.formatter.format_sequence(
                 sequence.sequence,
                 config.ncols,
                 config.block_size,
-                config.start_pos
+                config.start_pos,
+                consensus=consensus_seq,
+                color_snps_only=config.color_snps_only
             )
             print(f"{sequence.header:<{max_header_len}} {colored_seq}")
 
-    def _create_ruler(self, padding: str, ncols: int, start_pos: int, block_size: int) -> str:
+    def _create_ruler(self, padding: str, ncols: int, start_pos: int, block_size: int, is_html: bool=True) -> str:
         """Create a ruler string with column numbers and spaces"""
         ticks = ''
         numbers = []
@@ -574,6 +590,6 @@ class AlignmentViewer:
                     ticks += ' '
             else:
                 ticks += '-'
-
-        padding_html = '&nbsp;' * len(padding)
-        return padding_html + ''.join(numbers) + '\n' + padding_html + ticks
+        whitespace = '&nbsp;' if is_html else ' '
+        padding = whitespace * len(padding)
+        return padding + ''.join(numbers) + '\n' + padding + ticks

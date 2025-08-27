@@ -16,7 +16,8 @@ class DisplayConfig:
         as_html: Optional[bool] = None,
         as_plotly: Optional[bool] = None,
         plotly_decimation: bool = True,    # Enable automatic data decimation for large datasets
-        plotly_chunk_size: int = 1000      # Size of chunks for data processing
+        plotly_chunk_size: int = 1000,     # Size of chunks for data processing,
+        color_snps_only: bool = False
     ):
         self.nseqs = int(nseqs)
         self.ncols = int(ncols)
@@ -34,6 +35,7 @@ class DisplayConfig:
         self.plotly_max_sequences = int(nseqs)
         self.plotly_decimation = plotly_decimation
         self.plotly_chunk_size = int(plotly_chunk_size)
+        self.color_snps_only = color_snps_only
 
     def validate(self):
         """Validate the configuration values."""
