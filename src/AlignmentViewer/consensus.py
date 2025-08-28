@@ -1,4 +1,4 @@
-from typing import List, Dict, Tuple
+from typing import List, Dict, Tuple, Union, Any
 from collections import Counter
 from .sequence import Sequence
 
@@ -20,7 +20,7 @@ class ConsensusCalculator:
         if not all(length == lengths[0] for length in lengths):
             raise ValueError("All sequences must have the same length for alignment")
 
-    def calculate_position_consensus(self, position: int, ignore_gaps: bool = True) -> Dict[str, float]:
+    def calculate_position_consensus(self, position: int, ignore_gaps: bool = True) -> Dict:
         """
         Calculate consensus statistics for a specific position
 
@@ -37,9 +37,17 @@ class ConsensusCalculator:
         # Get all characters at this position
         chars = [seq.sequence[position].upper() for seq in self.sequences]
 
-        # Filter out gaps if requested
+        # Filter out gaps and prioritize valid nucleotides over N
         if ignore_gaps:
-            chars = [char for char in chars if char not in ['-', '.', 'X', 'N']]
+            # First try to get valid nucleotides (A, T, C, G)
+            valid_nucleotides = [char for char in chars if char in ['A', 'T', 'C', 'G']]
+            
+            if valid_nucleotides:
+                # Use only valid nucleotides for consensus, ignore N's
+                chars = valid_nucleotides
+            else:
+                # No valid nucleotides, filter out gaps but keep N if that's all we have
+                chars = [char for char in chars if char not in ['-', '.', 'X']]
 
         if not chars:
             return {
@@ -65,7 +73,7 @@ class ConsensusCalculator:
             'character_counts': dict(counter)
         }
 
-    def calculate_alignment_consensus(self, ignore_gaps: bool = True) -> List[Dict[str, float]]:
+    def calculate_alignment_consensus(self, ignore_gaps: bool = True) -> List[Dict]:
         """
         Calculate consensus for all positions in the alignment
 

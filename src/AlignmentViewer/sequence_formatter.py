@@ -23,9 +23,16 @@ class SequenceFormatter:
                 formatted.append(' ')
             base_upper = base.upper()
             # Guard clause: skip coloring if SNP mode and matches consensus
-            if color_snps_only and cons_base is not None and base_upper == cons_base.upper():
-                formatted.append(base_upper)
-                continue
+            if color_snps_only and cons_base is not None:
+                cons_base_upper = cons_base.upper()
+                # If consensus is N (unknown), don't highlight any nucleotides as SNPs
+                if cons_base_upper == 'N':
+                    formatted.append(base_upper)
+                    continue
+                # If base matches consensus, don't highlight
+                if base_upper == cons_base_upper:
+                    formatted.append(base_upper)
+                    continue
             # Color if possible
             if html and base_upper in self.colors.html_colors:
                 formatted.append(f'<span style="{self.colors.html_colors[base_upper]}">{base_upper}</span>')
