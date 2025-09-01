@@ -41,7 +41,7 @@ class ConsensusCalculator:
         if ignore_gaps:
             # First try to get valid nucleotides (A, T, C, G)
             valid_nucleotides = [char for char in chars if char in ['A', 'T', 'C', 'G']]
-            
+
             if valid_nucleotides:
                 # Use only valid nucleotides for consensus, ignore N's
                 chars = valid_nucleotides

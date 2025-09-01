@@ -34,48 +34,15 @@ from Bio import SeqIO
 sequences = list(SeqIO.parse("../data/alignment.fasta", "fasta"))
 AlignmentViewer.display_alignment(sequences, nseqs=5, ncols=50, as_html=True)
 ```
-
-### Plotly Heatmap Output (Integrated)
-```python
-from AlignmentViewer import AlignmentViewer
-from AlignmentViewer.config import DisplayConfig
-
-# Simple plotly heatmap
-AlignmentViewer.display_alignment("data/alignment.fasta", nseqs=5, ncols=50, as_plotly=True)
-
-# With consensus bar
-config = DisplayConfig(nseqs=5, ncols=50, as_plotly=True, show_consensus=True)
-AlignmentViewer.display_alignment("data/alignment.fasta", config=config)
-```
-
-### Get Plotly Figure Object
-```python
-from AlignmentViewer import AlignmentViewer
-
-# Get figure object for further customization
-fig = AlignmentViewer.get_alignment_plotly("data/alignment.fasta", nseqs=5, ncols=50)
-fig.show()
-
-# Get as HTML string
-html_string = AlignmentViewer.get_alignment_plotly_html("data/alignment.fasta", nseqs=5, ncols=50)
-```
-
-### Using the Config Object
-You can customize display options using the `DisplayConfig` object:
-```python
-from AlignmentViewer.config import DisplayConfig
-config = DisplayConfig(
-    nseqs=5,
-    ncols=50,
-    show_ruler=True,
-    block_size=10,
-    as_plotly=True,  # Enable Plotly output
-    show_consensus=True  # Add consensus bar above heatmap
-)
-AlignmentViewer.display_alignment("data/alignment.fasta", config=config)
-```
-
 ![Example image](docs/example.png)
+
+ An example of the available customisation:
+```python
+from AlignmentViewer import AlignmentViewer
+AlignmentViewer.display_alignment("../data/alignment.fasta", nseqs=5, ncols=300, start_pos=100, as_html=True, show_consensus=True, color_snps_only=True)
+```
+
+![Example image with custom configuration](docs/example2.png)
 
 ## Configuration
 

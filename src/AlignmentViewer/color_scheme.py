@@ -24,29 +24,3 @@ class ColorScheme:
                 'T': 'background-color: #e1c72f; color: black;',
             }
         )
-
-    def get_plotly_colors(self) -> Dict[str, str]:
-        """Extract hex colors from color scheme for Plotly"""
-        color_map = {}
-        for nucleotide, html_style in self.html_colors.items():
-            # Extract hex color from style string like "background-color: #4c72a5; color: black;"
-            if 'background-color:' in html_style:
-                hex_color = html_style.split('background-color:')[1].split(';')[0].strip()
-                color_map[nucleotide] = hex_color
-
-        # Add default colors for common nucleotides if not present
-        defaults = {
-            'A': '#4c72a5',  # blue
-            'G': '#48a365',  # green
-            'C': '#d0694a',  # red
-            'T': '#e1c72f',  # yellow
-            'U': '#e1c72f',  # yellow (same as T)
-            '-': '#f0f0f0',  # light gray for gaps
-            'N': '#cccccc'   # gray for unknown
-        }
-
-        for nuc, color in defaults.items():
-            if nuc not in color_map:
-                color_map[nuc] = color
-
-        return color_map

@@ -55,24 +55,6 @@ class TestBioPythonIntegration:
         except Exception as e:
             pytest.fail(f"display_alignment with SeqRecord list raised an exception: {e}")
 
-    def test_display_alignment_with_plotly_seqrecords(self):
-        """Test with as_plotly=True"""
-        mock_seqrecords = [
-            SeqRecord(Seq("ACGT"), id="seq1"),
-            SeqRecord(Seq("TGCA"), id="seq2"),
-        ]
-
-        # Get the plotly figure
-        fig = AlignmentViewer.get_alignment_plotly(
-            mock_seqrecords,
-            nseqs=2,
-            ncols=4
-        )
-
-        # Should return a plotly figure
-        assert hasattr(fig, 'show')  # Plotly figures have a show method
-        assert hasattr(fig, 'data')  # And data attribute
-
     def test_seqrecord_with_max_seqs_limit(self):
         """Test that max_seqs works with SeqRecord lists"""
         mock_seqrecords = [

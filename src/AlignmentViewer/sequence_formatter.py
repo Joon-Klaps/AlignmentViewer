@@ -51,49 +51,4 @@ class SequenceFormatter:
     def format_sequence_html(self, sequence: str, ncols: int, block_size: int, start_pos: int = 0, consensus: Optional[str] = None, color_snps_only: bool = False) -> str:
         return self._format_sequence_base(sequence, ncols, block_size, start_pos, html=True, consensus=consensus, color_snps_only=color_snps_only)
 
-    def alignment_to_dataframe(self, sequences, sequence_names=None):
-        """
-        Converts a list of equal-length sequences to a pandas DataFrame.
-        Each row is a sequence, each column is a position in the alignment.
-        This is better for Plotly visualization with proper labels.
 
-        Args:
-            sequences: List of Sequence objects OR list of sequence strings
-            sequence_names: Optional list of sequence names (used when sequences are strings)
-        """
-        import pandas as pd
-        if not sequences:
-            raise ValueError("No sequences provided.")
-
-        # Handle both Sequence objects and strings
-        if hasattr(sequences[0], 'sequence'):
-            # Sequence objects
-            length = len(sequences[0].sequence)
-            for seq in sequences:
-                if len(seq.sequence) != length:
-                    raise ValueError("All sequences must be the same length.")
-
-            # Create matrix
-            matrix = [list(seq.sequence.upper()) for seq in sequences]
-
-            # Create DataFrame with proper labels
-            if sequence_names is None:
-                sequence_names = [seq.header for seq in sequences]
-        else:
-            # String sequences
-            length = len(sequences[0])
-            for seq in sequences:
-                if len(seq) != length:
-                    raise ValueError("All sequences must be the same length.")
-
-            # Create matrix
-            matrix = [list(seq.upper()) for seq in sequences]
-
-            # Create DataFrame with proper labels
-            if sequence_names is None:
-                sequence_names = [f"Seq_{i+1}" for i in range(len(sequences))]
-
-        position_names = [i+1 for i in range(length)]
-
-        df = pd.DataFrame(matrix, index=sequence_names, columns=position_names)
-        return df
